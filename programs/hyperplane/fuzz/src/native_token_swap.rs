@@ -2,13 +2,14 @@
 
 use hyperplane::{
     curve::{base::SwapCurve, calculator::TradeDirection, fees::Fees},
+    instructions::model::CurveParameters,
     ix::{
         self, DepositAllTokenTypes, DepositSingleTokenTypeExactAmountIn, Swap,
         WithdrawAllTokenTypes, WithdrawSingleTokenTypeExactAmountOut,
     },
     state::{Curve, SwapPool},
     utils::seeds,
-    CurveParameters, InitialSupply,
+    InitialSupply,
 };
 use solana_program::{
     bpf_loader, entrypoint::ProgramResult, program_pack::Pack, pubkey::Pubkey, rent::Rent,
@@ -71,6 +72,14 @@ impl NativeTokenSwap {
         token_a_amount: u64,
         token_b_amount: u64,
     ) -> Self {
+        let (token_a_decimals, token_b_decimals) = match curve_params {
+            CurveParameters::Stable {
+                token_a_decimals,
+                token_b_decimals,
+                ..
+            } => (token_a_decimals, token_b_decimals),
+            _ => (6, 6),
+        };
         let mut admin_authority = NativeAccountData::new(0, system_program::id());
         admin_authority.is_signer = true;
         let mut pool_account = NativeAccountData::new(SwapPool::LEN, hyperplane::id());
@@ -119,7 +128,8 @@ impl NativeTokenSwap {
             spl_token_2022::id(),
         );
 
-        let mut token_a_mint_account = native_token::create_mint(&admin_authority.key);
+        let mut token_a_mint_account =
+            native_token::create_mint(&admin_authority.key, token_a_decimals);
         let (token_a_vault_key, _token_a_vault_bump_seed) = Pubkey::find_program_address(
             &[
                 seeds::TOKEN_A_VAULT,
@@ -139,7 +149,8 @@ impl NativeTokenSwap {
             &admin_authority.key,
             token_a_amount,
         );
-        let mut token_b_mint_account = native_token::create_mint(&admin_authority.key);
+        let mut token_b_mint_account =
+            native_token::create_mint(&admin_authority.key, token_b_decimals);
         let (token_b_vault_key, _token_b_vault_bump_seed) = Pubkey::find_program_address(
             &[
                 seeds::TOKEN_B_VAULT,
@@ -183,7 +194,7 @@ impl NativeTokenSwap {
                 initial_supply_a: token_a_amount,
                 initial_supply_b: token_b_amount,
             },
-            curve_params.clone(),
+            curve_params.clone().into(),
         )
         .unwrap();
 
@@ -218,7 +229,7 @@ impl NativeTokenSwap {
             pool_authority_account,
             fees,
             pool_account,
-            swap_curve: SwapCurve::new_from_params(curve_params),
+            swap_curve: SwapCurve::new_from_params(curve_params).unwrap(),
             swap_curve_account,
             pool_token_mint_account,
             pool_token_fees_vault_account,

@@ -19,8 +19,8 @@ use crate::{
     constraints::{SwapConstraints, SWAP_CONSTRAINTS},
     curve::{base::SwapCurve, fees::Fees},
     instructions::{
+        model::CurveParameters,
         test::runner::{syscall_stubs::test_syscall_stubs, token},
-        CurveParameters,
     },
     ix,
     state::SwapPool,
@@ -199,7 +199,7 @@ impl SwapAccountInfo {
             pool_account,
             swap_curve_key,
             swap_curve_account,
-            swap_curve: SwapCurve::new_from_params(curve_params.clone()),
+            swap_curve: SwapCurve::new_from_params(curve_params.clone()).unwrap(),
             curve_params,
             pool_token_mint_key,
             pool_token_mint_account,
@@ -249,7 +249,7 @@ impl SwapAccountInfo {
                 &self.token_b_program_id,
                 self.fees,
                 self.initial_supply.clone(),
-                self.curve_params.clone(),
+                self.curve_params.clone().into(),
             )
             .unwrap(),
             vec![

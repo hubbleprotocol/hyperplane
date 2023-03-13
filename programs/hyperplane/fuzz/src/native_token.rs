@@ -6,11 +6,12 @@ use spl_token_2022::{
 
 use crate::native_account_data::NativeAccountData;
 
-pub fn create_mint(owner: &Pubkey) -> NativeAccountData {
+pub fn create_mint(owner: &Pubkey, decimals: u8) -> NativeAccountData {
     let mut account_data = NativeAccountData::new(Mint::LEN, spl_token::id());
     let mint = Mint {
         is_initialized: true,
         mint_authority: COption::Some(*owner),
+        decimals,
         ..Default::default()
     };
     Mint::pack(mint, &mut account_data.data[..]).unwrap();

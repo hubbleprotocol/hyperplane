@@ -12,7 +12,7 @@ use anchor_lang::{
 #[cfg(feature = "fuzz")]
 use arbitrary::Arbitrary;
 
-use crate::{curve::fees::Fees, instructions::CurveParameters, InitialSupply};
+use crate::{curve::fees::Fees, instructions::CurveUserParameters, InitialSupply};
 
 /// Initialize instruction data
 #[derive(Debug, PartialEq)]
@@ -21,7 +21,7 @@ pub struct Initialize {
     pub fees: Fees,
     /// swap curve info for pool, including CurveType and anything
     /// else that may be required
-    pub curve: CurveParameters,
+    pub curve: CurveUserParameters,
 }
 
 /// Swap instruction data
@@ -103,7 +103,7 @@ pub fn initialize_pool(
     token_b_program_id: &Pubkey,
     fees: Fees,
     initial_supply: InitialSupply,
-    curve_parameters: CurveParameters,
+    curve_parameters: CurveUserParameters,
 ) -> Result<Instruction, ProgramError> {
     let data = super::instruction::InitializePool {
         initial_supply_a: initial_supply.initial_supply_a,
