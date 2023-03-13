@@ -17,7 +17,7 @@ anchor-lang = {git = "https://github.com/hubbleprotocol/anchor", branch = "tk22"
 anchor-spl = {git = "https://github.com/hubbleprotocol/anchor", branch = "tk22", features = ["token", "token_2022", "metadata"] }
 arrayref = "0.3.6"
 # required by anchor for zero_copy accounts
-bytemuck = { version = "1.4.0", features = ["derive", "min_const_generics"]}
+bytemuck = { version = "1.13.1", features = ["derive", "min_const_generics"]}
 enum_dispatch = "0.3.7"
 num-derive = "0.3"
 num-traits = "0.2"
