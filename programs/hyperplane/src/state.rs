@@ -1,11 +1,15 @@
 use anchor_lang::{
     account,
     prelude::{borsh, Pubkey},
-    zero_copy, AnchorDeserialize, AnchorSerialize,
+    zero_copy, AnchorDeserialize, AnchorSerialize, Result,
 };
 use enum_dispatch::enum_dispatch;
 
-use crate::curve::{base::CurveType, fees::Fees};
+use crate::{
+    curve::{base::CurveType, fees::Fees},
+    try_math,
+    utils::math::decimals_to_factor,
+};
 
 const DISCRIMINATOR_SIZE: usize = 8;
 
@@ -156,7 +160,22 @@ pub struct OffsetCurve {
 pub struct StableCurve {
     /// Amplifier constant
     pub amp: u64,
-    pub _padding: [u64; 15],
+    /// Amount of token A required to get 1 token B
+    pub token_a_factor: u64,
+    /// Amount of token B required to get 1 token A
+    pub token_b_factor: u64,
+    pub _padding: [u64; 13],
+}
+
+impl StableCurve {
+    pub fn new(amp: u64, token_a_decimals: u8, token_b_decimals: u8) -> Result<Self> {
+        Ok(Self {
+            amp,
+            token_a_factor: try_math!(decimals_to_factor(token_a_decimals, token_b_decimals))?,
+            token_b_factor: try_math!(decimals_to_factor(token_b_decimals, token_a_decimals))?,
+            _padding: [0; 13],
+        })
+    }
 }
 
 #[cfg(test)]

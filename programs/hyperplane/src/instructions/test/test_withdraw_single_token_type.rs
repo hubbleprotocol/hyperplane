@@ -21,8 +21,9 @@ use crate::{
         token,
     },
     ix,
+    model::CurveParameters,
     utils::seeds,
-    CurveParameters, InitialSupply,
+    InitialSupply,
 };
 
 #[test_case(spl_token::id(), spl_token::id(), spl_token::id(); "all-token")]
@@ -59,7 +60,7 @@ fn test_withdraw_one_exact_out(
     let token_a_amount = 100_000;
     let token_b_amount = 200_000;
     let curve_params = CurveParameters::ConstantProduct;
-    let swap_curve = SwapCurve::new_from_params(curve_params.clone());
+    let swap_curve = SwapCurve::new_from_params(curve_params.clone()).unwrap();
 
     let withdrawer_key = Pubkey::new_unique();
     let initial_a = token_a_amount / 10;

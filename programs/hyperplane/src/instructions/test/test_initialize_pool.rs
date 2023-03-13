@@ -27,9 +27,10 @@ use crate::{
         token,
     },
     ix,
+    model::CurveParameters,
     state::{SwapPool, SwapState},
     utils::seeds,
-    CurveParameters, InitialSupply,
+    InitialSupply,
 };
 
 #[test_case(spl_token::id(), spl_token::id(), spl_token::id(); "all-token")]
@@ -400,7 +401,7 @@ fn test_initialize(
                     &accounts.token_b_program_id,
                     accounts.fees,
                     accounts.initial_supply.clone(),
-                    accounts.curve_params.clone(),
+                    accounts.curve_params.clone().into(),
                 )
                 .unwrap(),
                 vec![
@@ -837,7 +838,7 @@ fn test_initialize(
                 &accounts.token_b_program_id,
                 accounts.fees,
                 accounts.initial_supply,
-                accounts.curve_params.clone(),
+                accounts.curve_params.into(),
             )
             .unwrap(),
             vec![

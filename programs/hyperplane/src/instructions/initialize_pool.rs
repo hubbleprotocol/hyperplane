@@ -17,7 +17,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, BorshSerialize, BorshDeserialize)]
-pub enum CurveParameters {
+pub enum CurveUserParameters {
     ConstantProduct,
     ConstantPrice { token_b_price: u64 },
     Offset { token_b_offset: u64 },
@@ -32,7 +32,7 @@ pub struct InitialSupply {
 
 pub fn handler(
     ctx: Context<InitializePool>,
-    curve_parameters: CurveParameters,
+    curve_parameters: CurveUserParameters,
     fees: Fees,
     initial_supply: InitialSupply,
 ) -> Result<()> {
@@ -41,7 +41,12 @@ pub fn handler(
         initial_supply_b,
     } = initial_supply;
 
-    let swap_curve = SwapCurve::new_from_params(curve_parameters);
+    let curve_parameters = curve_parameters.to_curve_params(
+        ctx.accounts.token_a_mint.decimals,
+        ctx.accounts.token_b_mint.decimals,
+    );
+
+    let swap_curve = SwapCurve::new_from_params(curve_parameters)?;
 
     msg!(
         "Initialize parameters: swap_curve={:?}, initial_supply_a={}, initial_supply_b={}",
@@ -251,4 +256,69 @@ pub struct InitializePool<'info> {
     pub token_a_token_program: Interface<'info, TokenInterface>,
     /// The token program for the token B mint
     pub token_b_token_program: Interface<'info, TokenInterface>,
+}
+
+pub mod model {
+
+    use super::*;
+
+    #[derive(Clone, Debug, PartialEq, Eq, BorshSerialize, BorshDeserialize)]
+    pub enum CurveParameters {
+        ConstantProduct,
+        ConstantPrice {
+            token_b_price: u64,
+        },
+        Offset {
+            token_b_offset: u64,
+        },
+        Stable {
+            amp: u64,
+            token_a_decimals: u8,
+            token_b_decimals: u8,
+        },
+    }
+
+    impl CurveUserParameters {
+        pub fn to_curve_params(
+            &self,
+            token_a_decimals: u8,
+            token_b_decimals: u8,
+        ) -> CurveParameters {
+            match self {
+                CurveUserParameters::ConstantProduct => CurveParameters::ConstantProduct,
+                CurveUserParameters::ConstantPrice { token_b_price } => {
+                    CurveParameters::ConstantPrice {
+                        token_b_price: *token_b_price,
+                    }
+                }
+                CurveUserParameters::Offset { token_b_offset } => CurveParameters::Offset {
+                    token_b_offset: *token_b_offset,
+                },
+                CurveUserParameters::Stable { amp } => CurveParameters::Stable {
+                    amp: *amp,
+                    token_a_decimals,
+                    token_b_decimals,
+                },
+            }
+        }
+    }
+
+    impl From<CurveParameters> for CurveUserParameters {
+        fn from(curve_params: CurveParameters) -> Self {
+            match curve_params {
+                CurveParameters::ConstantProduct => CurveUserParameters::ConstantProduct,
+                CurveParameters::ConstantPrice { token_b_price } => {
+                    CurveUserParameters::ConstantPrice { token_b_price }
+                }
+                CurveParameters::Offset { token_b_offset } => {
+                    CurveUserParameters::Offset { token_b_offset }
+                }
+                CurveParameters::Stable {
+                    amp,
+                    token_a_decimals: _,
+                    token_b_decimals: _,
+                } => CurveUserParameters::Stable { amp },
+            }
+        }
+    }
 }

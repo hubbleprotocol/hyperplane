@@ -28,7 +28,7 @@ pub mod hyperplane {
 
     pub fn initialize_pool(
         ctx: Context<InitializePool>,
-        curve_parameters: CurveParameters,
+        curve_parameters: CurveUserParameters,
         fees: Fees,
         initial_supply_a: u64,
         initial_supply_b: u64,

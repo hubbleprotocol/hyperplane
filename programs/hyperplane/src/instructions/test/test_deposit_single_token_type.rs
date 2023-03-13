@@ -21,8 +21,9 @@ use crate::{
         token,
     },
     ix,
+    model::CurveParameters,
     utils::seeds,
-    CurveParameters, InitialSupply,
+    InitialSupply,
 };
 
 #[test_case(spl_token::id(), spl_token::id(), spl_token::id(); "all-token")]

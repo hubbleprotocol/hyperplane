@@ -26,8 +26,9 @@ use crate::{
         token,
     },
     ix,
+    model::CurveParameters,
     utils::seeds,
-    CurveParameters, InitialSupply,
+    InitialSupply,
 };
 
 #[test_case(spl_token::id(), spl_token::id(), spl_token::id(); "all-token")]
@@ -95,6 +96,23 @@ fn test_valid_swap_curve_all_fees(
         &token_a_program_id,
         &token_b_program_id,
     );
+    let amp = 100;
+    let token_a_decimals = 6;
+    let token_b_decimals = 6;
+    assert::check_valid_swap_curve(
+        fees,
+        SwapTransferFees::default(),
+        CurveParameters::Stable {
+            amp,
+            token_a_decimals,
+            token_b_decimals,
+        },
+        token_a_amount,
+        token_b_amount,
+        &pool_token_program_id,
+        &token_a_program_id,
+        &token_b_program_id,
+    );
 }
 
 #[test_case(spl_token::id(), spl_token::id(), spl_token::id(); "all-token")]
@@ -155,6 +173,23 @@ fn test_valid_swap_curve_trade_fee_only(
         fees,
         SwapTransferFees::default(),
         CurveParameters::Offset { token_b_offset },
+        token_a_amount,
+        token_b_amount,
+        &pool_token_program_id,
+        &token_a_program_id,
+        &token_b_program_id,
+    );
+    let amp = 100;
+    let token_a_decimals = 6;
+    let token_b_decimals = 6;
+    assert::check_valid_swap_curve(
+        fees,
+        SwapTransferFees::default(),
+        CurveParameters::Stable {
+            amp,
+            token_a_decimals,
+            token_b_decimals,
+        },
         token_a_amount,
         token_b_amount,
         &pool_token_program_id,
@@ -246,7 +281,7 @@ fn test_valid_swap_with_fee_constraints(
             &accounts.token_b_program_id,
             accounts.fees,
             accounts.initial_supply.clone(),
-            accounts.curve_params.clone(),
+            accounts.curve_params.clone().into(),
         )
         .unwrap(),
         vec![

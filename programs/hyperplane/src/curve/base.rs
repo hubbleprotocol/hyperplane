@@ -12,10 +12,10 @@ use crate::{
         calculator::{CurveCalculator, RoundDirection, SwapWithoutFeesResult, TradeDirection},
         fees::Fees,
     },
+    model::CurveParameters,
     state::{ConstantPriceCurve, ConstantProductCurve, OffsetCurve, StableCurve},
     try_math,
     utils::math::TryMath,
-    CurveParameters,
 };
 
 /// Curve types supported by the hyperplane program.
@@ -63,8 +63,8 @@ pub struct SwapCurve {
 }
 
 impl SwapCurve {
-    pub fn new_from_params(curve_params: CurveParameters) -> Self {
-        match curve_params {
+    pub fn new_from_params(curve_params: CurveParameters) -> Result<Self> {
+        let curve = match curve_params {
             CurveParameters::ConstantProduct => SwapCurve {
                 curve_type: CurveType::ConstantProduct,
                 calculator: Arc::new(ConstantProductCurve {
@@ -85,14 +85,16 @@ impl SwapCurve {
                     ..Default::default()
                 }),
             },
-            CurveParameters::Stable { amp } => SwapCurve {
+            CurveParameters::Stable {
+                amp,
+                token_a_decimals,
+                token_b_decimals,
+            } => SwapCurve {
                 curve_type: CurveType::Stable,
-                calculator: Arc::new(StableCurve {
-                    amp,
-                    ..Default::default()
-                }),
+                calculator: Arc::new(StableCurve::new(amp, token_a_decimals, token_b_decimals)?),
             },
-        }
+        };
+        Ok(curve)
     }
 
     /// Subtract fees and calculate how much destination token will be provided

@@ -11,7 +11,7 @@ use hyperplane::{
         DepositAllTokenTypes, DepositSingleTokenTypeExactAmountIn, Swap, WithdrawAllTokenTypes,
         WithdrawSingleTokenTypeExactAmountOut,
     },
-    CurveParameters,
+    model::CurveParameters,
 };
 use hyperplane_fuzz::{
     native_account_data::NativeAccountData,
@@ -467,6 +467,10 @@ fn get_curve_parameters(curve_type: CurveType) -> CurveParameters {
         CurveType::Offset => CurveParameters::Offset {
             token_b_offset: 100_000_000_000,
         },
-        CurveType::Stable => CurveParameters::Stable { amp: 100 },
+        CurveType::Stable => CurveParameters::Stable {
+            amp: 100,
+            token_a_decimals: 6,
+            token_b_decimals: 6,
+        },
     }
 }
