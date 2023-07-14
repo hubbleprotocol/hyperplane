@@ -47,7 +47,7 @@
     "@solana/web3.js": "^1.75.0"
   },
   "devDependencies": {
-    "@solana/spl-token": "0.3.7",
+    "@solana/spl-token": "0.3.8",
     "@types/bn.js": "^5.1.1",
     "@types/chai": "^4.3.4",
     "anchor-client-gen": "^0.25.0",
